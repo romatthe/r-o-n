@@ -46,14 +46,40 @@
             cargo-msrv
             nixfmt
             rust-dist
+
+            # Postgres client
+            postgresql
           ];
 
           shellHook = ''
-  
+            echo "Welcome to Rust-on-Nails"
           '';
   
           RUST_BACKTRACE = "1";
+          PGDATA = "${toString ./.}/.pg";
         };
+
+        devScript = pkgs.writeShellScriptBin "pg" ''
+          pg up
+          pg down
+          pg status
+        '';
+
+        postgresConf =
+          pkgs.writeText "postgresql.conf" ''
+            log_min_messages = warning
+            log_min_error_statement = error
+            log_min_duration_statement = 100  # ms
+            log_connections = on
+            log_disconnections = on
+            log_duration = on
+            log_timezone = 'UTC'
+            log_statement = 'all'
+            log_directory = 'pg_log'
+            log_filename = 'postgresql-%Y-%m-%d_%H%M%S.log'
+            logging_collector = on
+            log_min_error_statement = error
+          '';
       }
     );
   }
